@@ -1,0 +1,35 @@
+{
+  "name": "ig-video-controls",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wxt",
+    "dev:firefox": "wxt -b firefox",
+    "build": "wxt build",
+    "build:firefox": "wxt build -b firefox",
+    "zip": "wxt zip",
+    "zip:firefox": "wxt zip -b firefox",
+    "zip:all": "bun run zip && bun run zip:firefox",
+    "gen-key": "bun scripts/gen-key.ts",
+    "postinstall": "wxt prepare",
+    "typecheck": "tsgo --noEmit",
+    "check": "ultracite check",
+    "fix": "ultracite fix",
+    "changeset": "changeset",
+    "version": "changeset version && bun scripts/linkify-changelog.ts && wxt prepare",
+    "release": "bun run zip",
+    "ci:release": "bun run scripts/ci-release.ts",
+    "prepare": "lefthook install"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.31.0",
+    "@types/bun": "^1.3.14",
+    "@typescript/native-preview": "^7.0.0-dev.20260524.1",
+    "lefthook": "^2.1.8",
+    "oxfmt": "^0.51.0",
+    "oxlint": "^1.66.0",
+    "ultracite": "7.7.0",
+    "wxt": "^0.20.26"
+  }
+}

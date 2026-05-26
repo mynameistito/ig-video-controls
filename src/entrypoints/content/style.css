@@ -1,0 +1,19 @@
+div.igvc-raise-button {
+  bottom: 50px;
+}
+div.igvc-fade-button {
+  opacity: 0.4;
+  transition: opacity 4s ease-out;
+}
+div.igvc-fade-button:hover {
+  opacity: 1;
+  transition: opacity 0.05s ease-out;
+}
+
+video[data-igvc-init][controls]::-webkit-media-controls {
+  display: flex;
+}
+
+video.igvc-disable-native-play-button[controls]::-webkit-media-controls-play-button {
+  visibility: hidden;
+}
