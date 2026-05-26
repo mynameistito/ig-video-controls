@@ -23,17 +23,18 @@ bun install
 
 1. Generate a signing key (run once):
 
-   ```powershell
-   bun run gen-key
-   ```
+```powershell
+bun run gen-key
+```
 
    This creates `key.pem` at the repo root (gitignored) and prints the derived extension ID.
 
 2. Upload the key to GitHub Actions:
 
-   ```powershell
-   Get-Content key.pem -Raw | gh secret set WXT_CHROME_KEY
-   ```
+```bash
+gh secret set WXT_CHROME_KEY < key.pem # register the private key with CI (unix)
+Get-Content key.pem -Raw | gh secret set WXT_CHROME_KEY # register the private key with CI (win)
+```
 
 ## Commands
 
