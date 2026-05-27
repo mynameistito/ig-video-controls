@@ -186,20 +186,76 @@ export const findVolumeOrTagsButtons = (
     }
   }
 
-  const buttons = [...searchRoot.querySelectorAll("button:has(svg)")].filter(
-    (btn) => {
-      if (isInstagramStoriesPage()) {
-        return hasApproximateSizeOfSmallButton(btn);
-      }
-      return (
-        locatedInBottomThirdOfVideoRect(btn, videoRect) &&
-        hasApproximateSizeOfSmallButton(btn)
-      );
+  const buttons = [
+    ...searchRoot.querySelectorAll("button:has(svg), [role='button']:has(svg)"),
+  ].filter((btn) => {
+    if (isInstagramStoriesPage()) {
+      return hasApproximateSizeOfSmallButton(btn);
     }
-  );
+    return (
+      locatedInBottomThirdOfVideoRect(btn, videoRect) &&
+      hasApproximateSizeOfSmallButton(btn)
+    );
+  });
 
   const audioButton = buttons.find(looksLikeAudioButton);
   const tagsButton = buttons.find(looksLikeTagsButton);
 
   return { audioButton, buttons, tagsButton };
+};
+
+const findInstanceKeyForVideo = (video: HTMLVideoElement): Element | null => {
+  for (const ancestor of nParents(video, 12)) {
+    if (ancestor.tagName === "SECTION") {
+      break;
+    }
+    const parent = ancestor.parentElement;
+    if (!parent) {
+      continue;
+    }
+
+    const found = [...parent.children].find(
+      (el) =>
+        el !== ancestor &&
+        Object.hasOwn((el as HTMLElement).dataset, "instancekey")
+    );
+    if (found) {
+      return found;
+    }
+  }
+  return null;
+};
+
+export const findIgMuteButton = (video: HTMLVideoElement): Element | null => {
+  const instanceKey = findInstanceKeyForVideo(video);
+  if (!instanceKey) {
+    return null;
+  }
+
+  for (const svg of instanceKey.querySelectorAll("svg[aria-label]")) {
+    const label = (svg.getAttribute("aria-label") ?? "").toLowerCase();
+    if (label.includes("audio")) {
+      return svg.closest("[role='button']");
+    }
+  }
+  return null;
+};
+
+export const isIgMuted = (muteBtn: Element): boolean | undefined => {
+  const svg = muteBtn.querySelector("svg");
+  if (!svg) {
+    return undefined;
+  }
+
+  const ariaLabel = (svg.getAttribute("aria-label") ?? "").toLowerCase();
+  if (ariaLabel.includes("audio")) {
+    return ariaLabel.includes("muted");
+  }
+
+  const viewBox = svg.getAttribute("viewBox");
+  if (viewBox) {
+    return viewBox === "0 0 48 48";
+  }
+
+  return undefined;
 };

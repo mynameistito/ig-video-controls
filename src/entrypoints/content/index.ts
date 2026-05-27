@@ -1,5 +1,6 @@
 import { defineContentScript } from "#imports";
 
+import { hideAllIgVolumeControls } from "./overlay-fixes";
 import { loadSettings, subscribeToSettings } from "./settings";
 import {
   setSettings,
@@ -27,6 +28,7 @@ const redefineWebkitMediaControlHidingCssRule = (): void => {
 
 export default defineContentScript({
   allFrames: true,
+  cssInjectionMode: "manifest",
   async main() {
     const settings = await loadSettings();
     setSettings(settings);
@@ -86,9 +88,16 @@ export default defineContentScript({
 
     observer.observe(document.body, { childList: true, subtree: true });
 
+    setInterval(() => {
+      modifyAllPresentVideos();
+      redefineWebkitMediaControlHidingCssRule();
+      hideAllIgVolumeControls();
+    }, 200);
+
     document.addEventListener("visibilitychange", () => {
       if (!document.hidden) {
         modifyAllPresentVideos();
+        redefineWebkitMediaControlHidingCssRule();
       }
     });
   },

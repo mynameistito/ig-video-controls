@@ -3,6 +3,8 @@ import {
   isInstagramStoriesPage,
   getEstimatedVideoComponentRootElement,
   nthParent,
+  findIgMuteButton,
+  isIgMuted,
 } from "./button-finder";
 import { queryAll, debounce } from "./dom";
 import {
@@ -95,6 +97,22 @@ const setPlaybackRateOfPreviouslySeenVideoElements = (
   }
 };
 
+const syncMuteStateWithIg = (videoPlayer: HTMLVideoElement): void => {
+  const muteBtn = findIgMuteButton(videoPlayer);
+  if (!muteBtn) {
+    return;
+  }
+
+  const igMuted = isIgMuted(muteBtn);
+  if (igMuted === undefined) {
+    return;
+  }
+
+  if (videoPlayer.muted !== igMuted) {
+    (muteBtn as HTMLElement).click();
+  }
+};
+
 const handleVolumeChange = (videoPlayer: HTMLVideoElement) => {
   if (
     currentSettings.rememberVolumeLevel &&
@@ -103,6 +121,8 @@ const handleVolumeChange = (videoPlayer: HTMLVideoElement) => {
     saveVolumeLevel(videoPlayer.volume);
     setVolumeOfPreviouslySeenVideoElements(videoPlayer.volume);
   }
+
+  syncMuteStateWithIg(videoPlayer);
 };
 
 const handleRateChange = (videoPlayer: HTMLVideoElement) => {

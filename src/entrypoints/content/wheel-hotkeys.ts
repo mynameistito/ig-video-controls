@@ -1,9 +1,25 @@
 import { clamp, snapToStep } from "../../lib/math";
 import type { Settings } from "./settings";
+import { showVolumeOsd, showSpeedOsd } from "./video-osd";
 
 let rmbHeld = false;
 let rmbUsedWheel = false;
 let currentSettings: Settings;
+
+const findVideoNearTarget = (target: Element): HTMLVideoElement | null => {
+  if (target.matches("video[data-igvc-init]")) {
+    return target as HTMLVideoElement;
+  }
+  let current: Element | null = target;
+  for (let i = 0; i < 12 && current; i += 1) {
+    const video = current.querySelector("video[data-igvc-init]");
+    if (video) {
+      return video as HTMLVideoElement;
+    }
+    current = current.parentElement;
+  }
+  return null;
+};
 
 const onMouseDown = (e: MouseEvent): void => {
   if (e.button === 2) {
@@ -30,9 +46,7 @@ const onWheel = (e: WheelEvent): void => {
     return;
   }
 
-  const video = target.closest(
-    "video[data-igvc-init]"
-  ) as HTMLVideoElement | null;
+  const video = findVideoNearTarget(target);
   if (!video) {
     return;
   }
@@ -46,11 +60,12 @@ const onWheel = (e: WheelEvent): void => {
           direction * currentSettings.playbackRateAdjustmentStepSize,
         currentSettings.playbackRateAdjustmentStepSize
       ),
-      0.0625 / 8,
+      0.0625,
       128
     );
     browser.storage.local.set({ playbackRate: newRate });
     video.playbackRate = newRate;
+    showSpeedOsd(video, newRate);
   } else if (rmbHeld) {
     e.preventDefault();
     rmbUsedWheel = true;
@@ -61,8 +76,12 @@ const onWheel = (e: WheelEvent): void => {
       0,
       1
     );
+    if (video.muted) {
+      video.muted = false;
+    }
     browser.storage.local.set({ volumeLevel: newVolume });
     video.volume = newVolume;
+    showVolumeOsd(video, newVolume);
   }
 };
 

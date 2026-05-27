@@ -11,20 +11,20 @@ Changesets → GitHub Actions release pipeline.
 
 ### Decided constraints (confirmed by user)
 
-| # | Topic                | Decision |
-|---|----------------------|----------|
-| 1 | Telemetry            | **Drop** all uninstall-URL / usage-stats code. Credit original author in README only. |
-| 1 | `homepage_url`       | `https://github.com/mynameistito/ig-video-controls` |
-| 1 | Identity             | `name = "Instagram Video Controls"`, `short_name = "ig-vid-ctrls"`, `author = "mynameistito"` |
-| 2 | Scope                | **Core feature port** only. Drop the commented-out mute-sync, `ErrorStackParser`, `Stackframe`, `recordEx`, `FloodTracker`, `recordUsageStats`, debug `log()`, `_metadata/`, `update_url`, etc. |
-| 3 | Options page         | **Dropped.** Hardcode defaults. |
-| 4 | Browsers             | Chrome **and** Firefox (mirror quote-viewer). |
-| 5 | Persistent ID        | Fresh `key.pem` produced by `bun run gen-key`. Do **not** reuse the upstream `MIIB…` key. |
-| 6 | Hotkeys              | Full rewrite — no `chrome.commands`, no `Alt+Up/Down`. Mouse-wheel only: |
-|   |                      | • `Ctrl + wheel` over a video → playback rate ±step |
-|   |                      | • `RMB-held + wheel` over a video → volume ±step (suppress contextmenu when wheeled with RMB held) |
-| 7 | Matches              | `https://*.instagram.com/*`, `all_frames: true` (keep iframe-embed support). |
-| 8 | Repo + release zips  | `github.com/mynameistito/ig-video-controls`; assets `ig-video-controls-<v>-chrome.zip`, `ig-video-controls-<v>-firefox.zip`. |
+| #   | Topic               | Decision                                                                                                                                                                                        |
+| --- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Telemetry           | **Drop** all uninstall-URL / usage-stats code. Credit original author in README only.                                                                                                           |
+| 1   | `homepage_url`      | `https://github.com/mynameistito/ig-video-controls`                                                                                                                                             |
+| 1   | Identity            | `name = "Instagram Video Controls"`, `short_name = "ig-vid-ctrls"`, `author = "mynameistito"`                                                                                                   |
+| 2   | Scope               | **Core feature port** only. Drop the commented-out mute-sync, `ErrorStackParser`, `Stackframe`, `recordEx`, `FloodTracker`, `recordUsageStats`, debug `log()`, `_metadata/`, `update_url`, etc. |
+| 3   | Options page        | **Dropped.** Hardcode defaults.                                                                                                                                                                 |
+| 4   | Browsers            | Chrome **and** Firefox (mirror quote-viewer).                                                                                                                                                   |
+| 5   | Persistent ID       | Fresh `key.pem` produced by `bun run gen-key`. Do **not** reuse the upstream `MIIB…` key.                                                                                                       |
+| 6   | Hotkeys             | Full rewrite — no `chrome.commands`, no `Alt+Up/Down`. Mouse-wheel only:                                                                                                                        |
+|     |                     | • `Ctrl + wheel` over a video → playback rate ±step                                                                                                                                             |
+|     |                     | • `RMB-held + wheel` over a video → volume ±step (suppress contextmenu when wheeled with RMB held)                                                                                              |
+| 7   | Matches             | `https://*.instagram.com/*`, `all_frames: true` (keep iframe-embed support).                                                                                                                    |
+| 8   | Repo + release zips | `github.com/mynameistito/ig-video-controls`; assets `ig-video-controls-<v>-chrome.zip`, `ig-video-controls-<v>-firefox.zip`.                                                                    |
 
 ### Defaults hardcoded (since options page is dropped)
 
@@ -256,21 +256,21 @@ The legacy code is ~1031 lines split across `InstagramVideoControls.js`,
 `ic-util.js`, `ic-content-script-init.js`, `ic-background.js`, plus
 `ErrorStackParser.js` / `Stackframe.js`. Map them as follows:
 
-| Legacy file / function                                  | New location                                | Action |
-|---------------------------------------------------------|---------------------------------------------|--------|
-| `ic-content-script-init.js` (`main()` bootstrapper)     | `src/entrypoints/content/index.ts`          | Replace with `defineContentScript({ matches, allFrames: true, runAt: "document_end", cssInjectionMode: "manifest", main() { … } })`. |
-| `InstagramVideoControls.init()`, `modifyAllPresentVideos`, `MutationObserver` setup | `content/index.ts` | Ported. Initial sweep + a single document-wide `MutationObserver({childList, subtree})` that batches via `requestAnimationFrame` and calls `modifyVideo` for each newly-attached `<video>`. |
-| `modifyVideo`, `modifyVideoElement`, `videoControlsAlreadyInitialized`, `redefineWebkitMediaControlHidingCssRule`, `setVolumeIfChanged`, `setPlaybackRateIfChanged`, `setVolumeOfPreviouslySeenVideoElements`, `setPlaybackRateOfPreviouslySeenVideoElements`, `valuesAreDifferentEnough`, `knownVideoElements` | `content/video-controls.ts` | Ported 1:1 to TS, `knownVideoElements` becomes a module-level `Set<HTMLVideoElement>`. Drop the `dataset.nativeControlsISetJooFree` joke flag → rename to `dataset.igvcInit = "1"`; CSS selector in `style.css` updated to match. |
-| `modifyOverlayWithInstagramPlayControl`, `findPlayButton`, `findControlButton`, `getVideoCoveringButtons`, `looksLikeCoversVideo`, `findVolumeOrTagsButtons`, `isInstagramStoriesPage`, `isInstagramReelsPage`, `isInstagramHomePage`, `getComponentRootForStoryVideo`, `getEstimatedVideoComponentRootElement`, `modifyVideoHeightIfSendMessageBoxOrLikeButtonIsBlockingVideoControls`, `nthParent`, `nParents`, `incapacitateStoryVideoPausingOverlays` | `content/overlay-fixes.ts` + `content/button-finder.ts` | Ported. Split: page-type detectors + button-finder go to `button-finder.ts`; overlay layout hacks go to `overlay-fixes.ts`. All `aria-label`/SVG-path heuristics and the multi-language fallbacks are preserved. |
-| `ic-util.js` → `debounce`, `throttle`, `leadingAndTrailingFiringThrottle`, `query`, `queryAll`, `fromHtml`, `cmpToPrecision`, `getAllElementSiblings` | `content/dom.ts` | Ported. **Drop** `watchEx`, `recordEx`, `recordUsageStats`, `getFunctionName`, `augmentFunctionName`, `FloodTracker`. Drop `byId`. |
-| `ic-util.js` → math helpers (`clamp`, `snapToStepSize`) — currently in `ic-background.js` | `src/lib/math.ts` | Pure functions, importable by both content + background. |
-| `ic-background.js` → `chrome.commands.onCommand` listener | **DELETED.** | Replaced by mouse-wheel hotkeys in content script. |
-| `ic-background.js` → `recordInstall`, `buildUrlRespectingMaxLength`, `updateUninstallUrl`, `countErrors`, `setUninstallURL` | **DELETED.** | All telemetry removed. |
-| `ic-background.js` → `chrome.runtime.onInstalled` | `src/entrypoints/background.ts` | Kept only to seed `DEFAULTS` into `storage.local` on first install. |
-| `ErrorStackParser.js`, `Stackframe.js`                  | **DELETED.** | Only used by `recordEx`. |
-| `_metadata/`, `update_url`, `key` (upstream)            | **DELETED.** | Persistent ID comes from our own `key.pem`. |
-| `options.html`, `options.js`                            | **DELETED.** | No options page (per user). |
-| `styles.css`                                            | `src/entrypoints/content/style.css` | Rename `ctrls4insta-*` classes → `igvc-*`. Replace `data-native-controls-i-set-joo-free` with `data-igvc-init`. Keep `raise-button`, `fade-button`, `disable-native-play-button` rules. |
+| Legacy file / function                                                                                                                                                                                                                                                                                                                                                                                                                                    | New location                                            | Action                                                                                                                                                                                                                            |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ic-content-script-init.js` (`main()` bootstrapper)                                                                                                                                                                                                                                                                                                                                                                                                       | `src/entrypoints/content/index.ts`                      | Replace with `defineContentScript({ matches, allFrames: true, runAt: "document_end", cssInjectionMode: "manifest", main() { … } })`.                                                                                              |
+| `InstagramVideoControls.init()`, `modifyAllPresentVideos`, `MutationObserver` setup                                                                                                                                                                                                                                                                                                                                                                       | `content/index.ts`                                      | Ported. Initial sweep + a single document-wide `MutationObserver({childList, subtree})` that batches via `requestAnimationFrame` and calls `modifyVideo` for each newly-attached `<video>`.                                       |
+| `modifyVideo`, `modifyVideoElement`, `videoControlsAlreadyInitialized`, `redefineWebkitMediaControlHidingCssRule`, `setVolumeIfChanged`, `setPlaybackRateIfChanged`, `setVolumeOfPreviouslySeenVideoElements`, `setPlaybackRateOfPreviouslySeenVideoElements`, `valuesAreDifferentEnough`, `knownVideoElements`                                                                                                                                           | `content/video-controls.ts`                             | Ported 1:1 to TS, `knownVideoElements` becomes a module-level `Set<HTMLVideoElement>`. Drop the `dataset.nativeControlsISetJooFree` joke flag → rename to `dataset.igvcInit = "1"`; CSS selector in `style.css` updated to match. |
+| `modifyOverlayWithInstagramPlayControl`, `findPlayButton`, `findControlButton`, `getVideoCoveringButtons`, `looksLikeCoversVideo`, `findVolumeOrTagsButtons`, `isInstagramStoriesPage`, `isInstagramReelsPage`, `isInstagramHomePage`, `getComponentRootForStoryVideo`, `getEstimatedVideoComponentRootElement`, `modifyVideoHeightIfSendMessageBoxOrLikeButtonIsBlockingVideoControls`, `nthParent`, `nParents`, `incapacitateStoryVideoPausingOverlays` | `content/overlay-fixes.ts` + `content/button-finder.ts` | Ported. Split: page-type detectors + button-finder go to `button-finder.ts`; overlay layout hacks go to `overlay-fixes.ts`. All `aria-label`/SVG-path heuristics and the multi-language fallbacks are preserved.                  |
+| `ic-util.js` → `debounce`, `throttle`, `leadingAndTrailingFiringThrottle`, `query`, `queryAll`, `fromHtml`, `cmpToPrecision`, `getAllElementSiblings`                                                                                                                                                                                                                                                                                                     | `content/dom.ts`                                        | Ported. **Drop** `watchEx`, `recordEx`, `recordUsageStats`, `getFunctionName`, `augmentFunctionName`, `FloodTracker`. Drop `byId`.                                                                                                |
+| `ic-util.js` → math helpers (`clamp`, `snapToStepSize`) — currently in `ic-background.js`                                                                                                                                                                                                                                                                                                                                                                 | `src/lib/math.ts`                                       | Pure functions, importable by both content + background.                                                                                                                                                                          |
+| `ic-background.js` → `chrome.commands.onCommand` listener                                                                                                                                                                                                                                                                                                                                                                                                 | **DELETED.**                                            | Replaced by mouse-wheel hotkeys in content script.                                                                                                                                                                                |
+| `ic-background.js` → `recordInstall`, `buildUrlRespectingMaxLength`, `updateUninstallUrl`, `countErrors`, `setUninstallURL`                                                                                                                                                                                                                                                                                                                               | **DELETED.**                                            | All telemetry removed.                                                                                                                                                                                                            |
+| `ic-background.js` → `chrome.runtime.onInstalled`                                                                                                                                                                                                                                                                                                                                                                                                         | `src/entrypoints/background.ts`                         | Kept only to seed `DEFAULTS` into `storage.local` on first install.                                                                                                                                                               |
+| `ErrorStackParser.js`, `Stackframe.js`                                                                                                                                                                                                                                                                                                                                                                                                                    | **DELETED.**                                            | Only used by `recordEx`.                                                                                                                                                                                                          |
+| `_metadata/`, `update_url`, `key` (upstream)                                                                                                                                                                                                                                                                                                                                                                                                              | **DELETED.**                                            | Persistent ID comes from our own `key.pem`.                                                                                                                                                                                       |
+| `options.html`, `options.js`                                                                                                                                                                                                                                                                                                                                                                                                                              | **DELETED.**                                            | No options page (per user).                                                                                                                                                                                                       |
+| `styles.css`                                                                                                                                                                                                                                                                                                                                                                                                                                              | `src/entrypoints/content/style.css`                     | Rename `ctrls4insta-*` classes → `igvc-*`. Replace `data-native-controls-i-set-joo-free` with `data-igvc-init`. Keep `raise-button`, `fade-button`, `disable-native-play-button` rules.                                           |
 
 ### `wheel-hotkeys.ts` — new module (replaces `chrome.commands`)
 
@@ -299,6 +299,7 @@ The legacy code is ~1031 lines split across `InstagramVideoControls.js`,
 ```
 
 Edge cases handled:
+
 - Modifier keys: `Ctrl+wheel` wins over `RMB+wheel` if both are held.
 - Pinch-zoom prevention (`preventDefault` on `wheel`) only when we actually consume the event.
 - Touchpad pinch (`e.ctrlKey === true` but `deltaY` may be fractional) — fine, we still snap.
@@ -344,14 +345,17 @@ export default defineBackground(() => {
 ## 6 — Scripts
 
 ### `scripts/gen-key.ts`
+
 Identical to quote-viewer except the `gh secret set` hint references the
 same secret name `WXT_CHROME_KEY`. No other changes (the script is
 package-agnostic — output is `key.pem` at repo root).
 
 ### `scripts/linkify-changelog.ts`
+
 Identical — uses `git remote get-url origin`, no hardcoded repo.
 
 ### `scripts/ci-release.ts`
+
 Adapted: every occurrence of `quote-viewer` → `ig-video-controls`. The
 `EXPECTED_ASSETS` function becomes:
 
@@ -365,8 +369,14 @@ const EXPECTED_ASSETS = (ver: string) => [
 and the zip paths:
 
 ```ts
-const chromeZip  = resolve(ROOT, `.output/ig-video-controls-${version}-chrome.zip`);
-const firefoxZip = resolve(ROOT, `.output/ig-video-controls-${version}-firefox.zip`);
+const chromeZip = resolve(
+  ROOT,
+  `.output/ig-video-controls-${version}-chrome.zip`
+);
+const firefoxZip = resolve(
+  ROOT,
+  `.output/ig-video-controls-${version}-firefox.zip`
+);
 ```
 
 (WXT's `wxt zip` derives the zip name from the package `name`, so as long
@@ -452,11 +462,11 @@ includes `src/**/*`, `wxt.config.ts`, `scripts/**/*`.
 
 Copy the three PNGs out of `temp/ext/icons/` into `public/icon/`:
 
-| Source                                       | Destination          |
-|----------------------------------------------|----------------------|
-| `temp/ext/icons/play-16x16.png`              | `public/icon/16.png` |
-| `temp/ext/icons/play-48x48.png`              | `public/icon/48.png` |
-| `temp/ext/icons/play-128x128.png`            | `public/icon/128.png`|
+| Source                            | Destination           |
+| --------------------------------- | --------------------- |
+| `temp/ext/icons/play-16x16.png`   | `public/icon/16.png`  |
+| `temp/ext/icons/play-48x48.png`   | `public/icon/48.png`  |
+| `temp/ext/icons/play-128x128.png` | `public/icon/128.png` |
 
 (`playback-speed-gui.png` is only used by the deleted options page —
 skip it.)
@@ -472,7 +482,7 @@ Modelled after quote-viewer's README, with these adjustments:
 
 1. **Title / blurb** — what the extension does (native HTML5 player on
    IG videos, mouse-wheel hotkeys, remembered settings).
-2. **Credit** — "Originally based on *Controls for Instagram Videos* by
+2. **Credit** — "Originally based on _Controls for Instagram Videos_ by
    Chris Rehfeld (rehfeldchris@gmail.com). This is an independent
    TypeScript rewrite; all telemetry / uninstall analytics removed."
 3. **Hotkeys** — table:
@@ -537,11 +547,12 @@ six default keys on first install.
     `redefineWebkitMediaControlHidingCssRule`, `knownVideoElements`.
 12. Port `style.css` with renamed classes/data attributes.
 13. Create `content/index.ts` — `defineContentScript({ allFrames: true,
-    matches: ["https://*.instagram.com/*"], cssInjectionMode: "manifest",
-    runAt: "document_end" })` whose `main()` wires up storage subscription
+matches: ["https://*.instagram.com/*"], cssInjectionMode: "manifest",
+runAt: "document_end" })` whose `main()` wires up storage subscription
     and the MutationObserver.
 
 **Verify C:**
+
 - Load `instagram.com/reels/<any>` — native HTML5 controls visible with
   seek bar, fullscreen, PiP.
 - Adjust volume on one video → reload → volume restored.
@@ -556,6 +567,7 @@ six default keys on first install.
     `main()` after the observer is set up.
 
 **Verify D:**
+
 - Hover any IG video, `Ctrl + scroll up` → playback speed increases by
   0.25 (snapped to step); `Ctrl + scroll down` → decreases. Page does not
   zoom.
@@ -624,7 +636,7 @@ For the record, so the implementer doesn't accidentally re-add them:
   for both Chrome and Firefox.
 - Firefox does not honour `controlsList`, but it also does not strip the
   download button, so the line `videoPlayer.setAttribute('controlsList',
-  '')` is harmless on Firefox — keep it as-is.
+'')` is harmless on Firefox — keep it as-is.
 - WXT's `defineBackground` produces a service-worker manifest on Chrome
   and an event-page on Firefox automatically — no per-browser logic
   required.

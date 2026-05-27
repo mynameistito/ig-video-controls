@@ -137,6 +137,28 @@ const adjustVisualCompletionOverlay = (
   }
 };
 
+const hideIgVolumeControl = (root: Element): void => {
+  const slider = root.querySelector('[aria-label="Adjust volume"]');
+  if (!slider?.parentElement) {
+    return;
+  }
+
+  const wrapper = slider.parentElement;
+  wrapper.style.setProperty("visibility", "hidden", "important");
+  wrapper.style.setProperty("pointer-events", "none", "important");
+};
+
+export const hideAllIgVolumeControls = (): void => {
+  for (const slider of document.querySelectorAll(
+    '[data-instancekey] [aria-label="Adjust volume"]'
+  )) {
+    const instanceKey = slider.closest("[data-instancekey]");
+    if (instanceKey) {
+      hideIgVolumeControl(instanceKey);
+    }
+  }
+};
+
 const handleInstanceKeyOverlay = (
   divInstanceKey: Element,
   embedRootElem: Element,
@@ -150,10 +172,7 @@ const handleInstanceKeyOverlay = (
     adjustVisualCompletionOverlay(divVisualCompletion, heightOfHtml5Controls);
   }
 
-  const volumeOrTags = findVolumeOrTagsButtons(divInstanceKey, video);
-  for (const button of volumeOrTags.buttons) {
-    button.parentElement?.classList.add("igvc-fade-button");
-  }
+  hideIgVolumeControl(divInstanceKey);
 
   if (isInstagramReelsPage()) {
     const className = "xutac5l";
@@ -163,6 +182,45 @@ const handleInstanceKeyOverlay = (
         "linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.2) 98%, rgba(0,0,0,0) 100%)";
     }
   }
+};
+
+const findInstanceKeyAmongAncestorSiblings = (
+  video: HTMLVideoElement,
+  maxLevels = 12
+): Element | null => {
+  for (const ancestor of nParents(video, maxLevels)) {
+    if (ancestor.tagName === "SECTION") {
+      break;
+    }
+    const parent = ancestor.parentElement;
+    if (!parent) {
+      continue;
+    }
+
+    const found = [...parent.children].find(
+      (el) =>
+        el !== ancestor &&
+        Object.hasOwn((el as HTMLElement).dataset, "instancekey") &&
+        el.querySelector("[data-visualcompletion]")
+    );
+    if (found) {
+      return found;
+    }
+  }
+  return null;
+};
+
+const findInstanceKeyAmongDirectSiblings = (
+  video: HTMLVideoElement
+): Element | undefined => {
+  const siblings = [...(video.parentElement?.children ?? [])];
+  return siblings.find(
+    (elem) =>
+      Object.hasOwn((elem as HTMLElement).dataset, "instancekey") &&
+      elem.querySelector(
+        "div[data-instancekey] > div[data-visualcompletion] div[role=presentation]"
+      )
+  );
 };
 
 const handleNoInstanceKeyOverlay = (
@@ -209,14 +267,9 @@ export const modifyOverlayWithInstagramPlayControl = (
     (controlButton as HTMLElement).style.bottom = heightOfHtml5Controls;
   }
 
-  const videoSiblings = [...(video.parentElement?.children ?? [])];
-  const divInstanceKey = videoSiblings.find(
-    (elem) =>
-      elem.matches("[data-instancekey]") &&
-      elem.querySelector(
-        "div[data-instancekey] > div[data-visualcompletion] div[role=presentation]"
-      )
-  );
+  const divInstanceKey =
+    findInstanceKeyAmongAncestorSiblings(video) ??
+    findInstanceKeyAmongDirectSiblings(video);
 
   if (divInstanceKey) {
     handleInstanceKeyOverlay(
