@@ -1,5 +1,5 @@
 ---
-"ig-video-controls": minor
+"ig-video-controls": major
 ---
 
 Initial TypeScript / WXT rewrite. Native HTML5 video controls for
