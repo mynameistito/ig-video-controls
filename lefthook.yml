@@ -6,12 +6,12 @@ pre-commit:
       # Always runs (no glob) – fine if it's quick/global
 
     - name: Format & fix
-      run: bun ultracite fix {staged_files} && git add {staged_files}
+      run: bun ultracite check
       glob: "**/*.{js,jsx,ts,tsx,json,jsonc,css}"
       # Only passes matching staged files
       # If none → quick noop
       # If fixes applied → auto-stages them for the commit
 
-    - name: Typecheck TypeScript
+    - name: TypeScript
       run: bun tsgo --noEmit
       glob: "**/*.{ts,tsx}"
