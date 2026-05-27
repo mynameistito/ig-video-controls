@@ -1,20 +1,8 @@
-export interface Settings {
-  playbackRate: number;
-  playbackRateAdjustmentStepSize: number;
-  rememberPlaybackRate: boolean;
-  rememberVolumeLevel: boolean;
-  volumeAdjustmentStepSize: number;
-  volumeLevel: number;
-}
+import type { Settings } from "@/lib/defaults";
+import { DEFAULTS } from "@/lib/defaults";
 
-export const DEFAULTS: Settings = {
-  playbackRate: 1,
-  playbackRateAdjustmentStepSize: 0.25,
-  rememberPlaybackRate: true,
-  rememberVolumeLevel: true,
-  volumeAdjustmentStepSize: 0.1,
-  volumeLevel: 1,
-};
+export type { Settings };
+export { DEFAULTS };
 
 const DEFAULTS_AS_RECORD = DEFAULTS as unknown as Record<string, unknown>;
 

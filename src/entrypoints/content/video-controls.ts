@@ -1,4 +1,5 @@
-import { valuesAreDifferentEnough } from "../../lib/math";
+import { valuesAreDifferentEnough } from "@/lib/math";
+
 import {
   isInstagramStoriesPage,
   getEstimatedVideoComponentRootElement,

@@ -328,13 +328,12 @@ Both the content script and background use this.
 
 ```ts
 import { defineBackground } from "#imports";
-import { DEFAULTS } from "../entrypoints/content/settings";
 
-export default defineBackground(() => {
-  browser.runtime.onInstalled.addListener(async () => {
-    const current = await browser.storage.local.get(DEFAULTS);
-    await browser.storage.local.set({ ...DEFAULTS, ...current });
-  });
+import { DEFAULTS } from "../../lib/defaults";
+
+export default defineBackground(async () => {
+  const current = await browser.storage.local.get(DEFAULTS);
+  await browser.storage.local.set({ ...DEFAULTS, ...current });
 });
 ```
 
@@ -402,7 +401,10 @@ quote-viewer. It already drives:
 ### Repo-side prep the user must do once
 
 1. `bun run gen-key` (generates `key.pem`, prints extension ID).
-2. `Get-Content key.pem -Raw | gh secret set WXT_CHROME_KEY` (Windows).
+2. **Windows (PowerShell):**
+   `Get-Content key.pem -Raw | gh secret set WXT_CHROME_KEY`
+   **macOS / Linux (bash/zsh):**
+   `gh secret set WXT_CHROME_KEY < key.pem`
 3. Push the repo to `github.com/mynameistito/ig-video-controls`.
 4. Ensure GitHub Actions has "Read and write" workflow permission (already
    in repo settings if quote-viewer worked).

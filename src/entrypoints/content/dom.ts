@@ -97,7 +97,7 @@ export const cmpToPrecision = (
   return Math.trunc(a * pow) - Math.trunc(b * pow);
 };
 
-export const getAllElementSiblings = (element: Element): Element[] => {
+export const getAllChildrenOfParent = (element: Element): Element[] => {
   const siblings: Element[] = [];
   let cursor = element.parentNode?.firstElementChild ?? null;
   while (cursor) {

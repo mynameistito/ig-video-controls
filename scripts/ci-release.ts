@@ -113,18 +113,21 @@ try {
     { cwd: ROOT, stdio: "inherit" }
   );
 } catch (error) {
-  let stderr = "";
+  let foundTag = "";
   try {
-    stderr = execSync(`gh release view ${tag} --json tagName --jq ".tagName"`, {
-      cwd: ROOT,
-      encoding: "utf-8",
-      stdio: ["pipe", "pipe", "pipe"],
-    }).trim();
+    foundTag = execSync(
+      `gh release view ${tag} --json tagName --jq ".tagName"`,
+      {
+        cwd: ROOT,
+        encoding: "utf-8",
+        stdio: ["pipe", "pipe", "pipe"],
+      }
+    ).trim();
   } catch {
     // release doesn't exist — fall through to rethrow
   }
 
-  if (stderr === tag) {
+  if (foundTag === tag) {
     console.warn(`Release ${tag} already exists — verifying assets.`);
     const present = fetchReleaseAssetNames(tag);
     const missing = EXPECTED_ASSETS(version).filter(

@@ -1,3 +1,5 @@
+import { dimensionWithinXPercentOrAbsoluteValue } from "@/lib/math";
+
 import {
   isInstagramReelsPage,
   findVolumeOrTagsButtons,
@@ -7,15 +9,8 @@ import {
 } from "./button-finder";
 import { queryAll, hide } from "./dom";
 
-const dimensionWithinXPercentOrAbsoluteValue = (
-  a: number,
-  b: number,
-  allowedRatio: number,
-  absolutePixels: number
-): boolean =>
-  !!a &&
-  !!b &&
-  (Math.abs(a / b) <= allowedRatio || Math.abs(a - b) <= absolutePixels);
+const HTML5_CONTROL_HEIGHT = "70px";
+const TEXTAREA_ADJUST_PADDING = 16;
 
 const looksLikeCoversVideoEl = (
   el: Element,
@@ -175,8 +170,26 @@ const handleInstanceKeyOverlay = (
   hideIgVolumeControl(divInstanceKey);
 
   if (isInstagramReelsPage()) {
-    const className = "xutac5l";
-    const gradientEls = embedRootElem.querySelectorAll(`.${className}`);
+    // Instagram's minified class "xutac5l" identifies the gradient overlay.
+    // This class name may change when Instagram updates — fallback to
+    // aria-label / structural selectors if the primary class is absent.
+    const IG_GRADIENT_CLASS = "xutac5l";
+    let gradientEls = embedRootElem.querySelectorAll(`.${IG_GRADIENT_CLASS}`);
+    if (gradientEls.length === 0) {
+      gradientEls = embedRootElem.querySelectorAll(
+        '[style*="linear-gradient"]'
+      );
+    }
+    if (gradientEls.length === 0) {
+      gradientEls = embedRootElem.querySelectorAll(
+        '[role="presentation"] > div[style*="gradient"], [data-visualcompletion] > div[style*="gradient"], [data-testid*="gradient"]'
+      );
+    }
+    if (gradientEls.length === 0) {
+      console.warn(
+        "igvc: could not locate reel gradient overlay via class, style, or structural selectors — selectors may need updating"
+      );
+    }
     for (const el of gradientEls) {
       (el as HTMLElement).style.backgroundImage =
         "linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.2) 98%, rgba(0,0,0,0) 100%)";
@@ -249,7 +262,7 @@ export const modifyOverlayWithInstagramPlayControl = (
     }
   }
 
-  const heightOfHtml5Controls = "70px";
+  const heightOfHtml5Controls = HTML5_CONTROL_HEIGHT;
   const playButton = findPlayButton(embedRootElem, video);
   if (playButton) {
     const parent = playButton.parentElement;
@@ -364,7 +377,7 @@ export const modifyVideoHeightIfSendMessageBoxOrLikeButtonIsBlockingVideoControl
       sendMessageContainer.getBoundingClientRect().top;
     const videoHeightAdjustment =
       distanceFromTopOfSendMessageToBottomOfParentContainer +
-      (textarea ? 16 : 0);
+      (textarea ? TEXTAREA_ADJUST_PADDING : 0);
 
     ensure100PercentHeight(video);
     video.style.height = `calc(100% - ${videoHeightAdjustment}px)`;

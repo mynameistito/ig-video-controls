@@ -27,7 +27,7 @@ bun install
 bun run gen-key
 ```
 
-   This creates `key.pem` at the repo root (gitignored) and prints the derived extension ID.
+This creates `key.pem` at the repo root (gitignored) and prints the derived extension ID.
 
 2. Upload the key to GitHub Actions:
 

@@ -35,13 +35,15 @@ export default defineContentScript({
 
     const _cleanupWheel = initWheelHotkeys(settings);
 
+    let prevSettings = settings;
+
     subscribeToSettings((newSettings) => {
       updateWheelSettings(newSettings);
       setSettings(newSettings);
 
       if (
         newSettings.rememberVolumeLevel &&
-        newSettings.volumeLevel !== settings.volumeLevel
+        newSettings.volumeLevel !== prevSettings.volumeLevel
       ) {
         for (const video of getKnownVideoElements()) {
           setVolumeIfChanged(video, newSettings.volumeLevel);
@@ -49,12 +51,14 @@ export default defineContentScript({
       }
       if (
         newSettings.rememberPlaybackRate &&
-        newSettings.playbackRate !== settings.playbackRate
+        newSettings.playbackRate !== prevSettings.playbackRate
       ) {
         for (const video of getKnownVideoElements()) {
           setPlaybackRateIfChanged(video, newSettings.playbackRate);
         }
       }
+
+      prevSettings = newSettings;
     });
 
     modifyAllPresentVideos();

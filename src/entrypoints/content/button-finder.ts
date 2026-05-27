@@ -1,12 +1,4 @@
-const dimensionWithinXPercentOrAbsoluteValue = (
-  a: number,
-  b: number,
-  allowedRatio: number,
-  absolutePixels: number
-): boolean =>
-  !!a &&
-  !!b &&
-  (Math.abs(a / b) <= allowedRatio || Math.abs(a - b) <= absolutePixels);
+import { dimensionWithinXPercentOrAbsoluteValue } from "@/lib/math";
 
 const hasChildrenMatchingAllSelectors = (
   elem: Element,

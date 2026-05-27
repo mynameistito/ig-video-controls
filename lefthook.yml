@@ -5,12 +5,11 @@ pre-commit:
       run: bun run scripts/cleanup.ts
       # Always runs (no glob) – fine if it's quick/global
 
-    - name: Format & fix
+    - name: Format check
       run: bun ultracite check
       glob: "**/*.{js,jsx,ts,tsx,json,jsonc,css}"
-      # Only passes matching staged files
-      # If none → quick noop
-      # If fixes applied → auto-stages them for the commit
+      # Validates formatting of matching staged files (no fixes applied)
+      # If none match → quick noop
 
     - name: TypeScript
       run: bun tsgo --noEmit

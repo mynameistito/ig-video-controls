@@ -39,15 +39,12 @@ const applyInlineStyles = (el: HTMLElement): void => {
   el.style.margin = "0";
   el.style.border = "none";
   el.style.outline = "none";
+  el.style.left = "0";
+  el.style.top = "0";
 };
 
 const applyChildStyles = (el: HTMLElement): void => {
-  const icon = el.querySelector("[data-osd-icon]") as HTMLElement | null;
-  if (icon) {
-    icon.style.display = "none";
-  }
-
-  const value = el.querySelector("[data-osd-value]") as HTMLElement | null;
+  const value = el.querySelector(".igvc-osd-value") as HTMLElement | null;
   if (value) {
     value.style.fontSize = "20px";
     value.style.fontWeight = "600";
@@ -56,11 +53,6 @@ const applyChildStyles = (el: HTMLElement): void => {
     value.style.whiteSpace = "nowrap";
     value.style.margin = "0";
     value.style.padding = "0";
-  }
-
-  const track = el.querySelector("[data-osd-track]") as HTMLElement | null;
-  if (track) {
-    track.style.display = "none";
   }
 };
 
@@ -73,12 +65,10 @@ const positionOsd = (el: HTMLElement, video: HTMLVideoElement): void => {
 
 const createOsdElement = (video: HTMLVideoElement): HTMLElement => {
   const el = document.createElement("div");
-  el.dataset.igvcOsd = "";
+  el.classList.add("igvc-osd");
 
   el.innerHTML = `
-    <span data-osd-icon></span>
-    <div data-osd-track><div data-osd-fill></div></div>
-    <span data-osd-value></span>
+    <span class="igvc-osd-value"></span>
   `;
 
   applyInlineStyles(el);
@@ -108,13 +98,14 @@ const showOsd = (
 
   positionOsd(el, video);
 
-  const valueEl = el.querySelector("[data-osd-value]") as HTMLElement | null;
+  const valueEl = el.querySelector(".igvc-osd-value") as HTMLElement | null;
 
   if (valueEl) {
     valueEl.textContent = formatValue(type, value);
   }
 
   el.style.opacity = "1";
+  el.classList.add("igvc-osd-visible");
 
   const existingTimer = osdTimers.get(video);
   if (existingTimer !== undefined) {
@@ -125,6 +116,7 @@ const showOsd = (
     video,
     setTimeout(() => {
       el.style.opacity = "0";
+      el.classList.remove("igvc-osd-visible");
       osdTimers.delete(video);
     }, OSD_HIDE_DELAY_MS)
   );

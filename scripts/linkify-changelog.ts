@@ -23,7 +23,7 @@ const commitUrlBase = `https://github.com/${repo}/commit`;
 let content = readFileSync(CHANGELOG_PATH, "utf-8");
 
 content = content.replaceAll(
-  /^(- )([0-9a-f]{7})(: )/gmu,
+  /^(- )([0-9a-f]{7,40})(: )/gmu,
   `$1[\`$2\`](${commitUrlBase}/$2)$3`
 );
 

@@ -8,6 +8,9 @@ dist
 
 # wxt
 .wxt
+
+# dev browser profiles
+.dev-profiles
 .output
 web-ext.config.ts
 stats.html

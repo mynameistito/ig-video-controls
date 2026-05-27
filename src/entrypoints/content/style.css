@@ -68,15 +68,6 @@ video.igvc-disable-native-play-button[controls]::-webkit-media-controls-play-but
   transform: translate(-50%, -50%) scale(1);
 }
 
-.igvc-osd.igvc-osd-visible {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
-}
-
-.igvc-osd-icon {
-  display: none;
-}
-
 .igvc-osd-value {
   color: #fff;
   font-size: 20px;
@@ -86,19 +77,4 @@ video.igvc-disable-native-play-button[controls]::-webkit-media-controls-play-but
     sans-serif;
   line-height: 1;
   white-space: nowrap;
-}
-
-.igvc-osd-track {
-  width: 100%;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.igvc-osd-fill {
-  height: 100%;
-  background: #fff;
-  border-radius: 2px;
-  transition: width 0.1s ease;
 }
