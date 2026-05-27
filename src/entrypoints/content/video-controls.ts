@@ -42,14 +42,6 @@ const redefineWebkitMediaControlHidingCssRule = (): void => {
   }
 };
 
-const saveVolumeLevel = async (volumeLevel: number): Promise<void> => {
-  await browser.storage.local.set({ volumeLevel });
-};
-
-const savePlaybackRate = async (playbackRate: number): Promise<void> => {
-  await browser.storage.local.set({ playbackRate });
-};
-
 export const setVolumeIfChanged = (
   player: HTMLVideoElement,
   newVolume: number
@@ -116,10 +108,10 @@ const syncMuteStateWithIg = (videoPlayer: HTMLVideoElement): void => {
 
 const handleVolumeChange = (videoPlayer: HTMLVideoElement) => {
   if (
+    !videoPlayer.dataset.igvcInitializing &&
     currentSettings.rememberVolumeLevel &&
     valuesAreDifferentEnough(currentSettings.volumeLevel, videoPlayer.volume)
   ) {
-    saveVolumeLevel(videoPlayer.volume);
     setVolumeOfPreviouslySeenVideoElements(videoPlayer.volume);
   }
 
@@ -127,6 +119,9 @@ const handleVolumeChange = (videoPlayer: HTMLVideoElement) => {
 };
 
 const handleRateChange = (videoPlayer: HTMLVideoElement) => {
+  if (videoPlayer.dataset.igvcInitializing) {
+    return;
+  }
   if (
     currentSettings.rememberPlaybackRate &&
     valuesAreDifferentEnough(
@@ -134,9 +129,25 @@ const handleRateChange = (videoPlayer: HTMLVideoElement) => {
       videoPlayer.playbackRate
     )
   ) {
-    savePlaybackRate(videoPlayer.playbackRate);
     setPlaybackRateOfPreviouslySeenVideoElements(videoPlayer.playbackRate);
   }
+};
+
+const removeInitFlag = (videoPlayer: HTMLVideoElement): void => {
+  setTimeout(() => {
+    delete videoPlayer.dataset.igvcInitializing;
+  }, 2000);
+};
+
+const applyPersistedSettings = (videoPlayer: HTMLVideoElement): void => {
+  videoPlayer.dataset.igvcInitializing = "1";
+  if (currentSettings.rememberVolumeLevel) {
+    setVolumeIfChanged(videoPlayer, currentSettings.volumeLevel);
+  }
+  if (currentSettings.rememberPlaybackRate) {
+    setPlaybackRateIfChanged(videoPlayer, currentSettings.playbackRate);
+  }
+  removeInitFlag(videoPlayer);
 };
 
 const modifyVideoElement = (embedRootElem: Element): void => {
@@ -171,12 +182,7 @@ const modifyVideoElement = (embedRootElem: Element): void => {
       }, 200)
     );
 
-    if (currentSettings.rememberVolumeLevel) {
-      setVolumeIfChanged(videoPlayer, currentSettings.volumeLevel);
-    }
-    if (currentSettings.rememberPlaybackRate) {
-      setPlaybackRateIfChanged(videoPlayer, currentSettings.playbackRate);
-    }
+    applyPersistedSettings(videoPlayer);
 
     redefineWebkitMediaControlHidingCssRule();
 
@@ -237,5 +243,13 @@ export const modifyAllPresentVideos = (): void => {
   }
   for (const video of queryAll("video")) {
     modifyVideo(video as HTMLVideoElement);
+  }
+  for (const video of knownVideoElements) {
+    if (currentSettings.rememberVolumeLevel) {
+      setVolumeIfChanged(video, currentSettings.volumeLevel);
+    }
+    if (currentSettings.rememberPlaybackRate) {
+      setPlaybackRateIfChanged(video, currentSettings.playbackRate);
+    }
   }
 };

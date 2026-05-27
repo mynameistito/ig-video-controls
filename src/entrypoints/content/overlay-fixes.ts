@@ -177,22 +177,29 @@ const handleInstanceKeyOverlay = (
   if (isInstagramReelsPage()) {
     // Instagram's minified class "xutac5l" identifies the gradient overlay.
     // This class name may change when Instagram updates — fallback to
-    // aria-label / structural selectors if the primary class is absent.
+    // structural selectors scoped to the instancekey container if the
+    // primary class is absent. Any style-based fallback is additionally
+    // filtered to elements that actually cover the video, so unrelated
+    // gradient-styled elements (thumbnails, story rings, etc.) are
+    // not restyled.
     const IG_GRADIENT_CLASS = "xutac5l";
-    let gradientEls = embedRootElem.querySelectorAll(`.${IG_GRADIENT_CLASS}`);
-    if (gradientEls.length === 0) {
-      gradientEls = embedRootElem.querySelectorAll(
-        '[style*="linear-gradient"]'
+    let gradientEls: Iterable<Element> = embedRootElem.querySelectorAll(
+      `.${IG_GRADIENT_CLASS}`
+    );
+    if ([...gradientEls].length === 0) {
+      // Restrict structural fallback to overlay-like containers inside
+      // the instancekey wrapper, then require the element to visually
+      // cover the video before treating it as the gradient overlay.
+      const candidates = divInstanceKey.querySelectorAll(
+        '[data-visualcompletion] [style*="gradient"], [role="presentation"] [style*="gradient"], [data-testid*="gradient"]'
+      );
+      gradientEls = [...candidates].filter((el) =>
+        looksLikeCoversVideoEl(el, video)
       );
     }
-    if (gradientEls.length === 0) {
-      gradientEls = embedRootElem.querySelectorAll(
-        '[role="presentation"] > div[style*="gradient"], [data-visualcompletion] > div[style*="gradient"], [data-testid*="gradient"]'
-      );
-    }
-    if (gradientEls.length === 0) {
+    if ([...gradientEls].length === 0) {
       console.warn(
-        "igvc: could not locate reel gradient overlay via class, style, or structural selectors — selectors may need updating"
+        "igvc: could not locate reel gradient overlay via class or structural selectors — selectors may need updating"
       );
     }
     for (const el of gradientEls) {

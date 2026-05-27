@@ -74,8 +74,7 @@ const createOsdElement = (video: HTMLVideoElement): HTMLElement => {
   applyInlineStyles(el);
   applyChildStyles(el);
 
-  const container = video.parentElement ?? document.body;
-  container.append(el);
+  document.body.append(el);
   positionOsd(el, video);
 
   return el;

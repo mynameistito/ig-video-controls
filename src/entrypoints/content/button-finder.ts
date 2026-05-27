@@ -21,6 +21,9 @@ export const isInstagramHomePage = (): boolean => {
   return path === "/" || path === "/feed/";
 };
 
+export const isInstagramPostPage = (): boolean =>
+  window.location.pathname.toLowerCase().startsWith("/p/");
+
 export const nthParent = (elem: Element | null, n: number): Element | null => {
   let remaining = n;
   let current = elem;
