@@ -39,9 +39,7 @@ export const throttle = <T extends (...args: unknown[]) => unknown>(
     if (pendingArgs) {
       invokeFn(pendingArgs);
     }
-    if (!timeout) {
-      pendingArgs = null;
-    }
+    pendingArgs = null;
   };
 
   const throttled = function throttled(

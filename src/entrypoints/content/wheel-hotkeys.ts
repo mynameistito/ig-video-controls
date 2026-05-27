@@ -42,8 +42,8 @@ const onContextMenu = (e: MouseEvent): void => {
 };
 
 const onWheel = (e: WheelEvent): void => {
-  const target = e.target as Element | null;
-  if (!target) {
+  const { target } = e;
+  if (!(target instanceof Element)) {
     return;
   }
 
@@ -55,10 +55,10 @@ const onWheel = (e: WheelEvent): void => {
   if (e.ctrlKey) {
     e.preventDefault();
     const direction = e.deltaY > 0 ? -1 : 1;
+    const baseRate = video.playbackRate;
     const newRate = clamp(
       snapToStep(
-        currentSettings.playbackRate +
-          direction * currentSettings.playbackRateAdjustmentStepSize,
+        baseRate + direction * currentSettings.playbackRateAdjustmentStepSize,
         currentSettings.playbackRateAdjustmentStepSize
       ),
       0.0625,

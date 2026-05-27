@@ -230,6 +230,11 @@ export const modifyVideo = (video: HTMLVideoElement): void => {
 };
 
 export const modifyAllPresentVideos = (): void => {
+  for (const video of knownVideoElements) {
+    if (!video.isConnected) {
+      knownVideoElements.delete(video);
+    }
+  }
   for (const video of queryAll("video")) {
     modifyVideo(video as HTMLVideoElement);
   }

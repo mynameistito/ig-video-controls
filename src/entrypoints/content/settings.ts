@@ -10,7 +10,12 @@ export const loadSettings = async (): Promise<Settings> => {
   const raw = await browser.storage.local.get(DEFAULTS_AS_RECORD);
   const fixed = { ...raw };
 
-  for (const key of ["volumeLevel", "playbackRate"] as const) {
+  for (const key of [
+    "volumeLevel",
+    "playbackRate",
+    "volumeAdjustmentStepSize",
+    "playbackRateAdjustmentStepSize",
+  ] as const) {
     if (typeof fixed[key] === "string") {
       fixed[key] = Number(fixed[key]);
     }

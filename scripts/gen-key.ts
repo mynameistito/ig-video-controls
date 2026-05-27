@@ -30,11 +30,21 @@ if (proc.exitCode !== 0) {
   process.exit(proc.exitCode ?? 1);
 }
 
-const pem = readFileSync(KEY_PATH, "utf-8");
-const spkiPem = createPublicKey(pem).export({
-  format: "pem",
-  type: "spki",
-}) as string;
+let pem: string;
+let spkiPem: string;
+try {
+  pem = readFileSync(KEY_PATH, "utf-8");
+  spkiPem = createPublicKey(pem).export({
+    format: "pem",
+    type: "spki",
+  }) as string;
+} catch (error) {
+  console.error(
+    `Failed to read or parse ${KEY_PATH}:`,
+    (error as Error).message
+  );
+  process.exit(1);
+}
 
 const spkiB64 = spkiPem
   .replaceAll("-----BEGIN PUBLIC KEY-----", "")

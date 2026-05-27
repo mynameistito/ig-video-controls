@@ -78,6 +78,11 @@ const getPercentageCssRuleVal = (
   elem: Element,
   cssProperty: string
 ): string => {
+  if (!elem.parentElement) {
+    return getComputedStyle(elem)[
+      cssProperty as keyof CSSStyleDeclaration
+    ] as string;
+  }
   const parentStyle = (elem.parentElement as HTMLElement).style;
   const prevDisplay = parentStyle.display;
   parentStyle.display = "none";
@@ -230,9 +235,7 @@ const findInstanceKeyAmongDirectSiblings = (
   return siblings.find(
     (elem) =>
       Object.hasOwn((elem as HTMLElement).dataset, "instancekey") &&
-      elem.querySelector(
-        "div[data-instancekey] > div[data-visualcompletion] div[role=presentation]"
-      )
+      elem.querySelector("[data-visualcompletion] div[role=presentation]")
   );
 };
 

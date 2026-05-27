@@ -32,6 +32,10 @@ const run = (cmd: string) => {
 };
 
 const pkg = JSON.parse(readFileSync(resolve(ROOT, "package.json"), "utf-8"));
+if (typeof pkg.version !== "string" || !/^\d+\.\d+\.\d+/u.test(pkg.version)) {
+  console.error("package.json version is missing or invalid:", pkg.version);
+  process.exit(1);
+}
 const version = pkg.version as string;
 const tag = `v${version}`;
 

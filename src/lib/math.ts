@@ -20,12 +20,12 @@ export const valuesAreDifferentEnough = (
  * Short-circuits on absolute tolerance first: if `|a - b| <= absolutePixels`,
  * returns true (including when either value is zero).
  *
- * Otherwise performs a ratio check: `b * allowedRatioFactor >= a >= b / allowedRatioFactor`.
+ * Otherwise performs a symmetric ratio check: `max(a,b) / min(a,b) <= allowedRatioFactor`.
  *
  * @param a - First dimension (px).
  * @param b - Second dimension (px).
  * @param allowedRatioFactor - Multiplier tolerance (>= 1). E.g. `1.1` allows ±10%.
- *   The check verifies `a` falls within `[b / factor, b * factor]`.
+ *   The check verifies the larger value is at most `allowedRatioFactor` times the smaller.
  * @param absolutePixels - Absolute pixel tolerance. Short-circuits the ratio check
  *   when the difference is within this threshold.
  * @returns `true` when dimensions are within tolerance.
@@ -42,5 +42,7 @@ export const dimensionWithinXPercentOrAbsoluteValue = (
   if (Math.abs(a - b) <= absolutePixels) {
     return true;
   }
-  return a >= b / allowedRatioFactor && a <= b * allowedRatioFactor;
+  const lo = Math.min(a, b);
+  const hi = Math.max(a, b);
+  return lo > 0 && hi / lo <= allowedRatioFactor;
 };

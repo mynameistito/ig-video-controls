@@ -11,7 +11,11 @@ const loadPemSource = (): string | undefined => {
   }
   const keyPath = resolve("key.pem");
   if (existsSync(keyPath)) {
-    return readFileSync(keyPath, "utf-8");
+    try {
+      return readFileSync(keyPath, "utf-8");
+    } catch (error) {
+      console.error(`Failed to read ${keyPath}:`, (error as Error).message);
+    }
   }
 };
 
@@ -21,10 +25,16 @@ const loadManifestKey = (): string | undefined => {
     return;
   }
 
-  const spkiPem = createPublicKey(pem).export({
-    format: "pem",
-    type: "spki",
-  }) as string;
+  let spkiPem: string;
+  try {
+    spkiPem = createPublicKey(pem).export({
+      format: "pem",
+      type: "spki",
+    }) as string;
+  } catch (error) {
+    console.error("Failed to parse PEM into SPKI:", (error as Error).message);
+    return undefined;
+  }
 
   return spkiPem
     .replaceAll("-----BEGIN PUBLIC KEY-----", "")
