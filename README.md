@@ -2,7 +2,7 @@
 
 Adds the native HTML5 video player (seek bar, volume slider, fullscreen, PiP) to Instagram videos, remembers your volume and playback speed across tabs and sessions, and provides mouse-wheel hotkeys for quick adjustments.
 
-A rewrite of [Controls for Instagram Videos](https://chromewebstore.google.com/detail/controls-for-instagram-vi/eigfbedabacomcacemdnkelnlhgbiacn) by Chris Rehfeld. This is an independent TypeScript rewrite; all telemetry / uninstall analytics are removed, and the extension is fully Open-Source and browser agnostic.
+Originally based on [Controls for Instagram Videos](https://chromewebstore.google.com/detail/controls-for-instagram-vi/eigfbedabacomcacemdnkelnlhgbiacn) by [rehfeld.us](rehfeld.us). This is an complete rewrite; all telemetry / uninstall analytics removed, and browser agnostic.
 
 ## Hotkeys
 
@@ -13,7 +13,7 @@ A rewrite of [Controls for Instagram Videos](https://chromewebstore.google.com/d
 
 Right-click without scrolling still works normally — the context menu is only suppressed when you actually scroll while holding RMB.
 
-## Install for development
+## development
 
 ```bash
 bun install
@@ -23,17 +23,18 @@ bun install
 
 1. Generate a signing key (run once):
 
-   ```powershell
-   bun run gen-key
-   ```
+```powershell
+bun run gen-key
+```
 
    This creates `key.pem` at the repo root (gitignored) and prints the derived extension ID.
 
 2. Upload the key to GitHub Actions:
 
-   ```powershell
-   Get-Content key.pem -Raw | gh secret set WXT_CHROME_KEY
-   ```
+```bash
+gh secret set WXT_CHROME_KEY < key.pem # register the private key with CI (unix)
+Get-Content key.pem -Raw | gh secret set WXT_CHROME_KEY # register the private key with CI (win)
+```
 
 ## Commands
 
@@ -60,4 +61,4 @@ This repo uses [Changesets](https://github.com/changesets/changesets) + GitHub A
 
 ## License
 
-MIT
+MIT(LICENSE)
