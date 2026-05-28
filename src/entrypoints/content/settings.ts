@@ -29,6 +29,7 @@ export const saveSettings = async (patch: Partial<Settings>): Promise<void> => {
 };
 
 const SETTINGS_KEYS = [
+  "hotkeys",
   "playbackRate",
   "playbackRateAdjustmentStepSize",
   "rememberPlaybackRate",
