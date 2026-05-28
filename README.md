@@ -61,4 +61,4 @@ This repo uses [Changesets](https://github.com/changesets/changesets) + GitHub A
 
 ## License
 
-MIT(LICENSE)
+[MIT](LICENSE)
