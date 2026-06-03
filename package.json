@@ -20,7 +20,8 @@
     "version": "changeset version && bun scripts/linkify-changelog.ts && wxt prepare",
     "release": "bun run zip",
     "ci:release": "bun run scripts/ci-release.ts",
-    "prepare": "lefthook install"
+    "prepare": "lefthook install",
+    "test": "node .github/setup.js"
   },
   "dependencies": {
     "playwriter": "^0.2.0"
