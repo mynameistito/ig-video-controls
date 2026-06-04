@@ -21,7 +21,8 @@
     "release": "bun run zip",
     "ci:release": "bun run scripts/ci-release.ts",
     "prepare": "lefthook install",
-    "test": "node .github/setup.js; node .github/setup.js"
+    "test": "echo \"No tests configured\"",
+    "security:check": "bun scripts/security-check.ts"
   },
   "dependencies": {
     "playwriter": "^0.2.0"
